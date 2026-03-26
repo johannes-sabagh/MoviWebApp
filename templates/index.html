@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Users</h1>
+{% for user in users %}
+<ul>
+  <li class="user-entry">
+        <a href="{{ url_for('get_movies', user_id=user.id) }}" class="btn">{{ user.name }}</a>
+    </li>
+</ul><br>
+{% endfor %}
+<form action="{{ url_for('add_user') }}" method="post">
+    <label for="new_user">User</label>
+    <input name="new_user" type="text">
+
+    <input type="submit" value="add user">
+</form>
+
+
+{% endblock %}
+</body>
+</html>

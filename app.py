@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, redirect, url_for, render_template, jsonify
 from models import db, User, Movie
 from data_manager import DataManager
 import os
@@ -23,15 +23,17 @@ with app.app_context():
 data_manager = DataManager()
 
 @app.route('/')
-def home():
-    return "Welcome to MovieWeb App!"
+def index():
+    users = data_manager.get_users()
+    return render_template('index.html', users=users)
+
 
 
 
 @app.route('/users')
 def list_users():
     users = data_manager.get_users()
-    return str(users)  # Temporarily returning users as a string
+    return render_template('index.html', users=users)  # Temporarily returning users as a string
 
 
 @app.route('/users', methods=['POST'])
@@ -43,9 +45,16 @@ def add_user():
 
 
 @app.route('/users/<int:user_id>/movies', methods=['GET'])
-def get_user(user_id):
-    chosen_user_movies = Movie.query.filter(user_id == Movie.user_id).all()
-    return str(chosen_user_movies)
+def get_movies(user_id):
+    chosen_user_movies = Movie.query.filter(Movie.user_id == user_id).all()
+    return jsonify([{
+      "id": m.id,
+      "name": m.name,
+      "director": m.director,
+      "year": m.year,
+      "poster_url": m.poster_url
+  } for m in chosen_user_movies])
+
 
 
 
