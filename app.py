@@ -2,6 +2,10 @@ from flask import Flask, request, redirect, url_for
 from models import db, User, Movie
 from data_manager import DataManager
 import os
+import requests
+from dotenv import load_dotenv
+
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -14,6 +18,8 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+
 data_manager = DataManager()
 
 @app.route('/')
@@ -46,11 +52,33 @@ def get_user(user_id):
 @app.route('/users/<int:user_id>/movies', methods=['POST'])
 def add_movie(user_id):
     name = request.form.get('name')
-    director = request.form.get('director')
-    year = request.form.get('year')
-    poster_url = request.form.get('poster_url')
-    data_manager.create_movie(name, director,year, poster_url, user_id)
-    return redirect(url_for('home'))
+    api_key = os.environ.get("APIKEY")
+
+    try:
+        # Make a GET request to the OMDb API using the provided movie title
+        movie_data = requests.get(f"https://www.omdbapi.com/?apikey={api_key}&t={name}")
+        json_movie_data = movie_data.json()
+        # OMDb returns this specific payload when no match is found
+        if json_movie_data == {'Response': 'False', 'Error': 'Movie not found!'}:
+            return f"The movie {name} not found"
+
+        # Extract the relevant fields from the JSON response
+        name = json_movie_data["Title"]
+        year = json_movie_data["Year"]
+        poster_url = json_movie_data["Poster"]
+        director = json_movie_data["Director"]
+        data_manager.create_movie(name, director,year, poster_url, user_id)
+        return "done"
+
+    except requests.exceptions.ConnectionError:
+        print("Error: No internet connection.")
+        return None
+
+    # to catch other errors
+
+    except Exception as e:
+        print(f"Error: {e}")
+
 
 
 
