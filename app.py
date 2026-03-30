@@ -124,8 +124,8 @@ def add_movie(user_id):
         movie_data = requests.get(f"https://www.omdbapi.com/?apikey={api_key}&t={name}")
         json_movie_data = movie_data.json()
         # OMDb returns this specific payload when no match is found
-        if json_movie_data == {'Response': 'False', 'Error': 'Movie not found!'}:
-            return f"The movie {name} not found"
+        if json_movie_data.get('Response') == 'False':
+            return f"Error from OMDb: {json_movie_data.get('Error', 'Unknown error')}", 400
 
         # Extract the relevant fields from the JSON response
         name = json_movie_data["Title"]
