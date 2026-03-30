@@ -136,13 +136,10 @@ def add_movie(user_id):
         return redirect(url_for('get_movies', user_id=user_id))
 
     except requests.exceptions.ConnectionError:
-        print("Error: No internet connection.")
-        return None
-
-    # to catch other errors
+        return "No internet connection.", 503
 
     except Exception as e:
-        print(f"Error: {e}")
+        return f"Error: {e}", 500
 
 
 
