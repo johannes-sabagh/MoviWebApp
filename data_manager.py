@@ -12,6 +12,7 @@ class DataManager:
     def get_users(self):
         return User.query.all()
 
+
     def create_movie(self, name, director, year, poster_url, user_id):
         new_movie = Movie(name=name, director=director,year=year, poster_url=poster_url, user_id=user_id )
         db.session.add(new_movie)

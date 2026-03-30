@@ -1,10 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}{{ user.name }}'s Movies — MovieApp{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<div class="mb-4 d-flex align-items-center justify-content-between">
+    <h2><i class="bi bi-collection-play-fill me-2"></i>{{ user.name }}'s Movies</h2>
+    <a href="/" class="btn btn-outline-light btn-sm"><i class="bi bi-arrow-left me-1"></i>All Users</a>
+</div>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+    {% for movie in movies %}
+    <div class="col">
+        <div class="card bg-secondary text-light h-100 border-0 shadow">
+            {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.name }} poster" style="object-fit:cover; height:300px;">
+            {% else %}
+            <div class="bg-dark d-flex align-items-center justify-content-center" style="height:300px;">
+                <i class="bi bi-film text-secondary" style="font-size:4rem;"></i>
+            </div>
+            {% endif %}
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ movie.name }}</h5>
+                <p class="card-text text-light mb-1"><i class="bi bi-calendar3 me-1"></i>{{ movie.year }}</p>
+                <p class="card-text text-light mb-3"><i class="bi bi-camera-video me-1"></i>{{ movie.director }}</p>
+
+                <div class="mt-auto d-flex gap-2">
+                    <form action="/users/{{ user.id }}/movies/{{ movie.id }}/update" method="POST" class="flex-grow-1">
+                        <div class="input-group input-group-sm">
+                            <input name="title" value="{{ movie.name }}" class="form-control bg-dark text-light border-secondary">
+                            <button type="submit" class="btn btn-outline-warning"><i class="bi bi-pencil"></i></button>
+                        </div>
+                    </form>
+                    <form action="/users/{{ user.id }}/movies/{{ movie.id }}/delete" method="POST">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <p class="text-secondary">No movies yet. Add one below!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card bg-secondary text-light border-0 col-lg-5">
+    <div class="card-body">
+        <h5 class="card-title mb-3"><i class="bi bi-plus-circle me-2"></i>Add Movie</h5>
+        <form action="/users/{{ user.id }}/movies" method="POST">
+            <div class="mb-2">
+                <input name="name" type="text" class="form-control bg-dark text-light border-secondary" placeholder="Movie title" required>
+            </div>
+            <div class="mb-3">
+                <input name="year" type="text" class="form-control bg-dark text-light border-secondary" placeholder="Year (optional)">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Add Movie</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

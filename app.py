@@ -40,20 +40,17 @@ def list_users():
 def add_user():
     new_user = request.form.get('new_user')
     data_manager.create_user(new_user)
-    return redirect(url_for('home'))
+    return redirect(url_for('index'))
+
 
 
 
 @app.route('/users/<int:user_id>/movies', methods=['GET'])
 def get_movies(user_id):
     chosen_user_movies = Movie.query.filter(Movie.user_id == user_id).all()
-    return jsonify([{
-      "id": m.id,
-      "name": m.name,
-      "director": m.director,
-      "year": m.year,
-      "poster_url": m.poster_url
-  } for m in chosen_user_movies])
+    user = User.query.filter(User.id == user_id).one()
+    return render_template('movies.html', movies=chosen_user_movies, user=user)
+
 
 
 
@@ -77,7 +74,7 @@ def add_movie(user_id):
         poster_url = json_movie_data["Poster"]
         director = json_movie_data["Director"]
         data_manager.create_movie(name, director,year, poster_url, user_id)
-        return "done"
+        return redirect(url_for('get_movies', user_id=user_id))
 
     except requests.exceptions.ConnectionError:
         print("Error: No internet connection.")
@@ -96,9 +93,9 @@ def add_movie(user_id):
 def update_movie(user_id, movie_id):
     chosen_movie = Movie.query.filter(Movie.user_id ==user_id, Movie.id == movie_id).first()
     if chosen_movie:
-        new_title = request.form.get('new_title')
+        new_title = request.form.get('title')
         data_manager.update_movie(movie_id, new_title)
-    return str(chosen_movie)
+    return redirect(url_for('get_movies', user_id=user_id))
 
 
 @app.route('/users/<int:user_id>/movies/<int:movie_id>/delete', methods=['POST'])
@@ -106,7 +103,14 @@ def delete_movie(user_id, movie_id):
     chosen_movie = Movie.query.filter(Movie.user_id == user_id, Movie.id == movie_id).first()
     if chosen_movie:
         data_manager.delete_movie(movie_id)
-    return str(chosen_movie)
+    return redirect(url_for('get_movies', user_id=user_id))
+
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
 
 
 if __name__=="__main__":
